@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final SupabaseAuthService _authService = SupabaseAuthService();
   bool _isLoading = false;
 
+  /// Login function
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -33,7 +34,6 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
-      // Show error message if login fails
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
@@ -41,6 +41,63 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  /// Forgot Password function
+  Future<void> _forgotPassword() async {
+    String? email;
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Reset Password"),
+        content: TextField(
+          decoration: const InputDecoration(labelText: "Enter your email"),
+          onChanged: (value) => email = value,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (email != null && email!.contains("@")) {
+                await _sendPasswordReset(email!);
+                Navigator.pop(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text("Please enter a valid email address")),
+                );
+              }
+            },
+            child: const Text("Send Reset Link"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Sends a password reset email with a custom message
+  Future<void> _sendPasswordReset(String email) async {
+    try {
+      await _authService.supabase.auth.resetPasswordForEmail(
+        email,
+      ); // Change this to your reset page
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "A password reset email has been sent to $email. Follow the instructions to reset your password.",
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error sending reset email: $e")),
+      );
     }
   }
 
@@ -71,16 +128,28 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             const SizedBox(height: 20),
+
+            // Login Button
             ElevatedButton(
               onPressed: _isLoading ? null : _login,
               child: _isLoading
                   ? const CircularProgressIndicator()
                   : const Text('Login'),
             ),
+
+            const SizedBox(height: 10),
+
+            // Forgot Password Button
+            TextButton(
+              onPressed: _forgotPassword,
+              child: const Text("Forgot Password?"),
+            ),
+
             const SizedBox(height: 20),
+
+            // Register Button
             TextButton(
               onPressed: () {
-                // Redirect to the registration page
                 Navigator.push(
                   context,
                   MaterialPageRoute(

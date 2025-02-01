@@ -27,24 +27,20 @@ class SupabaseAuthService {
       final userId = response.user!.id;
 
       // Step 2: Insert user profile data into the profiles table
+      // Step 2: Insert user profile data into the profiles table
       final profileResponse = await supabase.from('profiles').insert({
-        'id': userId, // Use the user ID from Auth
+        'id': userId,
         'name': name,
         'national_id': nationalId,
         'email': email,
-      });
+      }).select();
 
-      if (profileResponse.error != null) {
-        throw Exception(
-            'Profile creation failed: ${profileResponse.error!.message}');
+      if (profileResponse.isEmpty) {
+        throw Exception('Profile creation failed: No profile data returned.');
       }
 
-      if (kDebugMode) {
-        print('User registered successfully: $userId');
-      }
-
-      // Step 3: Save session after sign-up
-      await _saveSession(response.session);
+      await Future.delayed(const Duration(
+          milliseconds: 500)); // ✅ Ensure DB writes before proceeding
 
       return response;
     } on AuthException catch (e) {
@@ -100,11 +96,6 @@ class SupabaseAuthService {
     return supabase.auth.currentUser;
   }
 
-  /// Listen to authentication state changes
-  Stream<AuthState> authStateChanges() {
-    return supabase.auth.onAuthStateChange;
-  }
-
   /// Restore session after app restart
   Future<bool> restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
@@ -120,7 +111,7 @@ class SupabaseAuthService {
         if (kDebugMode) {
           print('Failed to restore session: $e');
         }
-        return false; // Session restore failed
+        return false;
       }
     }
     return false;

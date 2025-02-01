@@ -34,11 +34,16 @@ class _RegisterPageState extends State<RegisterPage> {
       );
 
       if (response.user != null) {
-        // Navigate to the login page on successful registration
-        Navigator.pushReplacementNamed(context, '/login');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration successful!')),
         );
+
+        // ✅ Ensure navigation works
+        Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
+        });
       }
     } on AuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
