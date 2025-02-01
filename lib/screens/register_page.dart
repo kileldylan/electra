@@ -36,6 +36,9 @@ class _RegisterPageState extends State<RegisterPage> {
       if (response.user != null) {
         // Navigate to the login page on successful registration
         Navigator.pushReplacementNamed(context, '/login');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful!')),
+        );
       }
     } on AuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
