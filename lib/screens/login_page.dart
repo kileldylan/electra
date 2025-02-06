@@ -85,7 +85,10 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await _authService.supabase.auth.resetPasswordForEmail(
         email,
-      ); // Change this to your reset page
+        redirectTo:
+            "myapp://reset-password", // This tells Supabase to redirect back to your app
+      );
+      // Change this to your reset page
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
